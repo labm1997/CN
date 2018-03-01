@@ -1,5 +1,6 @@
 #include "ui.h"
 #include "commands.h"
+#include "string.h"
 
 static char verbose = 1;
 
@@ -30,6 +31,7 @@ void ui_interactiveMode(){
     commands_runCommand(command);
     str_clean(&command);
   }
+  commands_cleanCommands();
 }
 
 char ui_verbose(){
