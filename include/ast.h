@@ -3,6 +3,7 @@
 
 #include "string.h"
 #include "array.h"
+#include <stdarg.h>
 
 Array_define_headers(AST_no,struct AST_no *); // Define Array_AST_no e suas funções
 
@@ -21,6 +22,8 @@ typedef struct AST_no{
 	Array_AST_no *filhos;
 	AST_notipo tipo;
 	String *nome;
+	double valor;
+	struct AST_no *(*avaliar)(struct AST_no *, Array_AST_no *); // Recebe o nó e seus filhos a serem avaliados
 } AST_no;
 
 typedef struct AST{
@@ -46,21 +49,15 @@ bool ast_pushPilha(AST_pilha *pilha, AST_no *no);
 AST_pilha_e *ast_popPilha(AST_pilha *pilha);
 void ast_mostrarArvore(AST *arvore);
 void ast_mostrarNo(AST_pilha *pilha, AST_no *no);
+AST_no *ast_avaliar(AST *arvore);
+struct AST_no *ast_int_avaliar(AST_no *no, Array_AST_no *filhos);
 
-#define INCREASE_ARRAYBLOCK(arraypointer,arraycounter,type,block,failmessage,failreturn) \
-	type *increase_arrayblock_tmp;\
-	if(arraypointer == NULL){\
-		arraypointer = (type *)malloc(block*sizeof(type));\
-	}\
-	else if(arraycounter % block == 0){\
-		increase_arrayblock_tmp = (type *)realloc(arraypointer,(arraycounter/block+1)*block*sizeof(type));\
-		if(increase_arrayblock_tmp != NULL){\
-			arraypointer = increase_arrayblock_tmp;\
-		}\
-		else {\
-			ui_printLog("FALHA",failmessage,COLOR_RED);	\
-			return failreturn;\
-		}\
-	}\
+#define ast_funcao_binop_headers(opname,op)\
+struct AST_no *ast_funcao_##opname##_avaliar(AST_no *no, Array_AST_no *filhos);
+
+ast_funcao_binop_headers(soma,+);
+ast_funcao_binop_headers(mult,*);
+ast_funcao_binop_headers(div,/);
+ast_funcao_binop_headers(sub,-);
 
 #endif

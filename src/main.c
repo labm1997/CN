@@ -42,5 +42,9 @@ int main(int argc, char **argv){
 	AST *arvore = parser(str_createString(argv[1]));
 	ast_mostrarArvore(arvore);
 	
+	AST_no *avaliacao = ast_avaliar(arvore);
+	
+	if(avaliacao != NULL) printf("Resultado: %lf\n", avaliacao->valor);
+	
 	return 0;
 }

@@ -8,6 +8,63 @@
 
 Array_define(AST_no, struct AST_no *); // Implementa funções de Array_AST_no
 
+struct AST_no *ast_int_avaliar(AST_no *no, Array_AST_no *filhos){
+	return no;
+}
+
+// Operações binárias
+#define ast_funcao_binop(opname,op)\
+	\
+	struct AST_no *ast_funcao_##opname##_avaliar(AST_no *no, Array_AST_no *filhos){\
+		AST_no *ret, *app1, *app2;\
+		double res;\
+		if(filhos->tamanho == 2){\
+			if(filhos->data[0]->avaliar == NULL || filhos->data[1]->avaliar == NULL){\
+				ui_printLog("FALHA","Falha ao avaliar nó %p (%s): Sem definição de aplicação para algum filho\n",COLOR_RED,no,no->nome->data);\
+				return NULL;\
+			}\
+			app1 = (filhos->data[0]->avaliar(filhos->data[0],filhos->data[0]->filhos));\
+			app2 = (filhos->data[1]->avaliar(filhos->data[1],filhos->data[1]->filhos));\
+			if(app1 != NULL && app2 != NULL){\
+				res = app1->valor op app2->valor;\
+			}\
+			else {\
+				ui_printLog("FALHA","Falha ao avaliar nó %p (%s)\n",COLOR_RED,no,no->nome->data);\
+				return NULL;\
+			}\
+		}\
+		else {\
+			ui_printLog("FALHA","Operação " #opname " requer exatamente dois argumentos\n",COLOR_RED);\
+			return NULL;\
+		}\
+		ret = ast_criarNo(str_createString(NULL),INT);\
+		ret->valor = res;\
+		return ret;\
+	}\
+
+ast_funcao_binop(soma,+);
+ast_funcao_binop(mult,*);
+ast_funcao_binop(div,/);
+ast_funcao_binop(sub,-);
+
+
+AST_no *ast_avaliar(AST *arvore){
+	if(arvore == NULL){
+		ui_printLog("FALHA","Não é possível avaliar árvore nula\n",COLOR_RED);
+		return NULL;
+	}
+	if(arvore->raiz == NULL){
+		ui_printLog("FALHA","Não é possível avaliar árvore com raiz nula\n",COLOR_RED);
+		return NULL;
+	}
+	if(arvore->raiz->avaliar == NULL){
+		ui_printLog("FALHA","Não é possível avaliar árvore com nó sem função de avaliação\n",COLOR_RED);
+		return NULL;
+	}
+	return arvore->raiz->avaliar(arvore->raiz,arvore->raiz->filhos);
+	
+}
+
 AST *ast_criarArvore(){
 	AST *ret = (AST *)malloc(sizeof(AST));
 	if(ret == NULL){
@@ -39,6 +96,7 @@ AST_no *ast_criarNo(String *nome, AST_notipo tipo){
 	ret->filhos = Array_AST_no_criar(AST_BLOCO);
 	ret->tipo = tipo;
 	ret->nome = nome;
+	ret->avaliar = NULL;
 	return ret;
 }
 
@@ -72,7 +130,8 @@ void ast_mostrarNo(AST_pilha *pilha, AST_no *no){
 			return;
 		}
 		for(j=1;j<pilha->altura;j++) printf(" ");
-		printf("Nó %p (%s)\n", no, no->nome->data);
+		if(no->tipo == INT) printf("Nó %p (%s): Valor = %lf\n", no, no->nome->data, no->valor);
+		else printf("Nó %p (%s)\n", no, no->nome->data);
 		for(;i<no->filhos->tamanho;i++){
 			if(no->filhos->data[i] == NULL){
 				ui_printLog("WARNING","Nó nulo entre filhos de %p\n",COLOR_YELLOW, no);

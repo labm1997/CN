@@ -26,12 +26,37 @@ void parser_adicionarPosCesp(parser_cesp *cesp, unsigned int pos){
 	}
 }
 
+
 AST *parser(String *str){
 	AST_pilha *pilha = ast_criarPilha();
 	AST_no *raiz = parser_constroiNo(pilha, str);
 	AST *arvore = ast_criarArvore();
 	ast_definirRaizArvore(arvore,raiz);
 	return arvore;
+}
+
+bool parser_verificaNomeInt(String *nome){
+	unsigned int i=0,j;
+	bool ok;
+	char permitidos[] = {'0','1','2','3','4','5','6','7','8','9','-','.'};
+	for(;i<nome->length-1;i++){
+		ok = false;
+		for(j=0;j<12;j++)
+			if(nome->data[i] == permitidos[j]) ok = true;
+		if(!ok) return false;
+	}
+	return true;
+}
+
+AST_no *parser_constroiNoIntVar(String *nome){
+	AST_no *filho;
+	if(parser_verificaNomeInt(nome)){
+		filho = ast_criarNo(nome,INT);
+		filho->avaliar = ast_int_avaliar;
+		sscanf(nome->data,"%lf",&(filho->valor));
+	}
+	else filho = ast_criarNo(nome,VAR);
+	return filho;
 }
 
 AST_no *parser_constroiNo(AST_pilha *pilha, String *str){
@@ -45,6 +70,20 @@ AST_no *parser_constroiNo(AST_pilha *pilha, String *str){
 				// Função
 				nome = str_substr(str,fixo,i); // Não inclui '('
 				pai = ast_criarNo(nome,FUNCAO);
+				
+				if(str_compareraw(nome,"+")){
+					pai->avaliar = ast_funcao_soma_avaliar;
+				}
+				else if(str_compareraw(nome,"*")){
+					pai->avaliar = ast_funcao_mult_avaliar;
+				}
+				else if(str_compareraw(nome,"/")){
+					pai->avaliar = ast_funcao_div_avaliar;
+				}
+				else if(str_compareraw(nome,"-")){
+					pai->avaliar = ast_funcao_sub_avaliar;
+				}
+				
 				ast_pushPilha(pilha,pai);
 				sub_string = str_substr(str,i+1,str->length);
 				return parser_constroiNo(pilha,sub_string);
@@ -59,7 +98,7 @@ AST_no *parser_constroiNo(AST_pilha *pilha, String *str){
 				}
 				pai = pilha_e->dado;
 				if(nome->length > 1){ // '\0' é contado
-					filho = ast_criarNo(nome,VAR);
+					filho = parser_constroiNoIntVar(nome);
 					ast_adicionarFilho(pai,filho);
 				}
 				if(pilha->raiz != NULL){
@@ -77,7 +116,7 @@ AST_no *parser_constroiNo(AST_pilha *pilha, String *str){
 						return NULL;
 					}
 					pai = pilha->raiz->dado;
-					filho = ast_criarNo(nome,VAR);
+					filho = parser_constroiNoIntVar(nome);
 					ast_adicionarFilho(pai,filho);
 				}
 				fixo = i+1;
@@ -85,6 +124,6 @@ AST_no *parser_constroiNo(AST_pilha *pilha, String *str){
 		}
 		
 		// Se chegou aqui, é pq não ocorreu nenhum caracter especial '(', ')' ou ','
-		return ast_criarNo(str,VAR);
+		return parser_constroiNoIntVar(str);
 		
 }

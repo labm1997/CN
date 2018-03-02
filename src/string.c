@@ -45,6 +45,14 @@ char str_compare(String *str1, String *str2){
   return 1;
 }
 
+char str_compareraw(String *str1, char *str2){
+  unsigned int i=0;
+  for(;str1->data[i] != '\0' && str2[i] != '\0';i++)
+    if(str1->data[i] != str2[i]) return 0;
+  if(str1->data[i] != '\0' || str2[i] != '\0') return 0;
+  return 1;
+}
+
 void str_clean(String *string){
   free(string->data);
   string->data = NULL;

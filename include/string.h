@@ -15,5 +15,6 @@ String *str_createString(char *);
 char str_compare(String *, String *);
 void str_clean(String *);
 String *str_substr(String *, unsigned int, unsigned int);
+char str_compareraw(String *str1, char *str2);
 
 #endif

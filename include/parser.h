@@ -6,6 +6,7 @@
 #include "array.h"
 
 Array_define_headers(uint,unsigned int); // Define cabeçalho para Array_uint
+Array_define_headers(parser_cesp,struct parser_cesp *) // Define cabeçalho para Array_parser_cesp
 
 typedef struct parser_cesp{ // caracter especial
 	char caracter;
