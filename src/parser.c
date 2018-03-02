@@ -1,6 +1,30 @@
 #include <stdio.h>
 #include "ast.h"
 #include "parser.h"
+#include "array.h"
+
+Array_define(uint,unsigned int); // Implementa o código para Array_uint
+
+parser_cesp *parser_CriarCesp(char car){
+	parser_cesp *cesp = (parser_cesp *)malloc(sizeof(parser_cesp));
+	if(cesp == NULL){
+		ui_printLog("FALHA","Não foi possível alocar memória para um cesp\n",COLOR_RED);
+		return NULL;
+	}
+	cesp->caracter = car;
+	cesp->array = Array_uint_criar(1);
+	return cesp;
+}
+
+void parser_adicionarPosCesp(parser_cesp *cesp, unsigned int pos){
+	if(cesp == NULL){
+		ui_printLog("FALHA","Não se pode fazer nada com cesp nulo.\n",COLOR_RED);
+		return;
+	}
+	if(!Array_uint_push(cesp->array,pos)){
+		ui_printLog("FALHA","Não foi possível adicionar %u ao array de %p ('%c')\n",COLOR_RED,pos,cesp,cesp->caracter);
+	}
+}
 
 AST *parser(String *str){
 	AST_pilha *pilha = ast_criarPilha();

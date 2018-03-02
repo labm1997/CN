@@ -2,8 +2,11 @@
 #include <stdlib.h>
 #include "ast.h"
 #include "ui.h"
+#include "array.h"
 
 #define AST_BLOCO 10
+
+Array_define(AST_no, struct AST_no *); // Implementa funções de Array_AST_no
 
 AST *ast_criarArvore(){
 	AST *ret = (AST *)malloc(sizeof(AST));
@@ -33,37 +36,22 @@ AST_no *ast_criarNo(String *nome, AST_notipo tipo){
 		ui_printLog("MALLOC","Falha ao alocar memória para criação de nó\n",COLOR_RED);
 		return NULL;
 	}
-	ret->filhos = NULL;
-	ret->n_filhos = 0;
+	ret->filhos = Array_AST_no_criar(AST_BLOCO);
 	ret->tipo = tipo;
 	ret->nome = nome;
 	return ret;
 }
 
 bool ast_adicionarFilho(AST_no *pai, AST_no *filho){
-	AST_no **tmp;
 	if(pai == NULL){
 		ui_printLog("FALHA","Ponteiro para nó pai é nulo\n",COLOR_RED);	
 		return false;
 	}
-	if(pai->filhos == NULL){
-		pai->filhos = (AST_no **)malloc(AST_BLOCO*sizeof(AST_no *));
+	
+	if(!Array_AST_no_push(pai->filhos,filho)){
+		ui_printLog("FALHA","Falha realloc, falha ao adicionar um nó como filho.",COLOR_RED);	
+		return false;
 	}
-	else if(pai->n_filhos % AST_BLOCO == 0){
-		tmp = (AST_no **)realloc(pai->filhos,(pai->n_filhos/AST_BLOCO+1)*AST_BLOCO*sizeof(AST_no *));
-		if(tmp != NULL){
-			pai->filhos = tmp;
-		}
-		else {
-			ui_printLog("FALHA","Falha realloc: Falha ao adicionar %p como filho de %p\n",COLOR_RED, filho, pai);	
-			return false;
-		}
-	}
-	pai->filhos[pai->n_filhos] = filho;
-	if(filho == NULL){
-		ui_printLog("WARNING","Ponteiro para nó filho é nulo\n",COLOR_YELLOW);	
-	}
-	pai->n_filhos++;
 	return true;
 }
 
@@ -85,12 +73,12 @@ void ast_mostrarNo(AST_pilha *pilha, AST_no *no){
 		}
 		for(j=1;j<pilha->altura;j++) printf(" ");
 		printf("Nó %p (%s)\n", no, no->nome->data);
-		for(;i<no->n_filhos;i++){
-			if(no->filhos[i] == NULL){
+		for(;i<no->filhos->tamanho;i++){
+			if(no->filhos->data[i] == NULL){
 				ui_printLog("WARNING","Nó nulo entre filhos de %p\n",COLOR_YELLOW, no);
 			}
 			else {
-				ast_mostrarNo(pilha, no->filhos[i]);
+				ast_mostrarNo(pilha, no->filhos->data[i]);
 			}
 		}
 		ast_popPilha(pilha);

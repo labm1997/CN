@@ -2,6 +2,9 @@
 #define HEADER_AST
 
 #include "string.h"
+#include "array.h"
+
+Array_define_headers(AST_no,struct AST_no *); // Define Array_AST_no e suas funções
 
 typedef enum {
 	FUNCAO,
@@ -15,8 +18,7 @@ typedef enum {
 } bool;
 
 typedef struct AST_no{
-	struct AST_no **filhos;
-	unsigned int n_filhos;
+	Array_AST_no *filhos;
 	AST_notipo tipo;
 	String *nome;
 } AST_no;
@@ -45,6 +47,20 @@ AST_pilha_e *ast_popPilha(AST_pilha *pilha);
 void ast_mostrarArvore(AST *arvore);
 void ast_mostrarNo(AST_pilha *pilha, AST_no *no);
 
-
+#define INCREASE_ARRAYBLOCK(arraypointer,arraycounter,type,block,failmessage,failreturn) \
+	type *increase_arrayblock_tmp;\
+	if(arraypointer == NULL){\
+		arraypointer = (type *)malloc(block*sizeof(type));\
+	}\
+	else if(arraycounter % block == 0){\
+		increase_arrayblock_tmp = (type *)realloc(arraypointer,(arraycounter/block+1)*block*sizeof(type));\
+		if(increase_arrayblock_tmp != NULL){\
+			arraypointer = increase_arrayblock_tmp;\
+		}\
+		else {\
+			ui_printLog("FALHA",failmessage,COLOR_RED);	\
+			return failreturn;\
+		}\
+	}\
 
 #endif
