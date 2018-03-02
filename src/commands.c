@@ -8,6 +8,8 @@ char commands_quit(){
   return commands_quitValue;
 }
 
+void commands_nada(){}
+
 void commands_setQuit(){
   commands_quitValue = 1;
   ui_printLog("BYE","Tchau!\n",COLOR_GREEN);
@@ -39,8 +41,8 @@ Command *commands_addCommand(void (*f)()){
 
 void commands_addHotword(Command *c, char *str){
 	if(c->hotwords != NULL)
-		c->hotwords = (String *)realloc(c->hotwords, (c->n_hotwords+1)*sizeof(String));
-	else c->hotwords = (String *)malloc(sizeof(String));
+		c->hotwords = (String **)realloc(c->hotwords, (c->n_hotwords+1)*sizeof(String *));
+	else c->hotwords = (String **)malloc(sizeof(String *));
 	
 	c->hotwords[c->n_hotwords] = str_createString(str);
 	c->n_hotwords++;	
@@ -50,7 +52,7 @@ void commands_cleanCommands(){
 	unsigned int i,j;
 	for(i=0;i<commands_list->n_commands;i++){
 		for(j=0;j<commands_list->commands[i].n_hotwords;j++){
-			str_clean(&commands_list->commands[i].hotwords[j]);
+			str_clean(commands_list->commands[i].hotwords[j]);
 		}
 	}
 	free(commands_list->commands);
@@ -81,9 +83,12 @@ void commands_loadCommands(){
 	tmp = commands_addCommand(commands_help);
   commands_addHotword(tmp,"help");
   
+	tmp = commands_addCommand(commands_nada);
+  commands_addHotword(tmp,"");
+  
 }
 
-void commands_runCommand(String hotword){
+void commands_runCommand(String *hotword){
   unsigned int i=0,j;
   char done=0;
   for(;i<commands_list->n_commands;i++){

@@ -22,14 +22,14 @@ void ui_printLog(char *label, char *message, char *color, ...){
 
 void ui_interactiveMode(){
   char c;
-  String command;
+  String *command;
   commands_loadCommands();
   while(!commands_quit()){
     command = str_createString(NULL);
     printf(">> ");
-    while((c=fgetc(stdin)) != '\n') str_pushChar(&command, c);
+    while((c=fgetc(stdin)) != '\n') str_pushChar(command, c);
     commands_runCommand(command);
-    str_clean(&command);
+    str_clean(command);
   }
   commands_cleanCommands();
 }

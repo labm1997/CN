@@ -4,7 +4,7 @@
 #include "string.h"
 
 typedef struct command{
-  String *hotwords;
+  String **hotwords;
   unsigned int n_hotwords;
   void (*function)();
 } Command;
@@ -16,7 +16,7 @@ typedef struct commands_list{
 
 void commands_loadCommands();
 void commands_cleanCommands();
-void commands_runCommand(String);
+void commands_runCommand(String *);
 char commands_quit();
 
 #endif
